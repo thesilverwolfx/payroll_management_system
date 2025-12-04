@@ -28,6 +28,11 @@
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        .flex-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
         .form-group {
             margin-bottom: 15px;
         }
@@ -109,6 +114,42 @@
             color: #4CAF50;
             margin-top: 20px;
         }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .summary-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            background: #fafafa;
+        }
+        .summary-card h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .summary-card p {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+        }
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        .actions a {
+            text-decoration: none;
+        }
+        .note {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -123,6 +164,37 @@
     {% endwith %}
 
     <div class="container">
+        <h2>Payroll Snapshot</h2>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h3>Total Employees</h3>
+                <p>{{ summary.employee_count }}</p>
+            </div>
+            <div class="summary-card">
+                <h3>Total Hours</h3>
+                <p>{{ "%.1f"|format(summary.total_hours or 0) }}</p>
+            </div>
+            <div class="summary-card">
+                <h3>Gross Payroll</h3>
+                <p>${{ "%.2f"|format(summary.gross_total or 0) }}</p>
+            </div>
+            <div class="summary-card">
+                <h3>Net Payroll</h3>
+                <p>${{ "%.2f"|format(summary.net_total or 0) }}</p>
+            </div>
+            <div class="summary-card">
+                <h3>Avg Hourly Rate</h3>
+                <p>${{ "%.2f"|format(summary.average_rate or 0) }}</p>
+            </div>
+        </div>
+        <div class="actions">
+            <a href="/export_payroll">
+                <button type="button">Download CSV Report</button>
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
         <h2>Add Employee</h2>
         <form method="POST" action="/add_employee">
             <div class="form-group">
@@ -134,16 +206,28 @@
                 <input type="text" name="employee_id" required>
             </div>
             <div class="form-group">
+                <label>Department:</label>
+                <input type="text" name="department" placeholder="Optional">
+            </div>
+            <div class="form-group">
                 <label>Hourly Rate ($):</label>
                 <input type="number" name="hourly_rate" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Allowances ($):</label>
+                <input type="number" name="allowances" step="0.01" value="0">
+            </div>
+            <div class="form-group">
+                <label>Deductions ($):</label>
+                <input type="number" name="deductions" step="0.01" value="0">
             </div>
             <button type="submit">Add Employee</button>
         </form>
     </div>
 
     <div class="container">
-        <h2>Update Hours Worked</h2>
-        <form method="POST" action="/update_hours" class="form-inline">
+        <h2>Update Compensation</h2>
+        <form method="POST" action="/update_compensation" class="form-inline">
             <div class="form-group">
                 <label>Employee ID:</label>
                 <input type="text" name="employee_id" required>
@@ -152,8 +236,17 @@
                 <label>Hours:</label>
                 <input type="number" name="hours" step="0.1" required>
             </div>
-            <button type="submit">Update Hours</button>
+            <div class="form-group">
+                <label>Allowances ($):</label>
+                <input type="number" name="allowances" step="0.01" placeholder="Leave blank to keep">
+            </div>
+            <div class="form-group">
+                <label>Deductions ($):</label>
+                <input type="number" name="deductions" step="0.01" placeholder="Leave blank to keep">
+            </div>
+            <button type="submit">Save Changes</button>
         </form>
+        <p class="note">Leave allowances or deductions blank to keep current values.</p>
     </div>
 
     <div class="container">
@@ -164,8 +257,11 @@
                 <tr>
                     <th>ID</th>
                     <th>Name</th>
+                    <th>Department</th>
                     <th>Hourly Rate</th>
                     <th>Hours Worked</th>
+                    <th>Allowances</th>
+                    <th>Deductions</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -174,8 +270,11 @@
                 <tr>
                     <td>{{ emp.employee_id }}</td>
                     <td>{{ emp.name }}</td>
+                    <td>{{ emp.department or '-' }}</td>
                     <td>${{ "%.2f"|format(emp.hourly_rate) }}</td>
                     <td>{{ emp.hours_worked }}</td>
+                    <td>${{ "%.2f"|format(emp.allowances or 0) }}</td>
+                    <td>${{ "%.2f"|format(emp.deductions or 0) }}</td>
                     <td>
                         <a href="/remove_employee/{{ emp.employee_id }}">
                             <button class="danger">Remove</button>
@@ -198,9 +297,17 @@
                 <tr>
                     <th>Employee ID</th>
                     <th>Name</th>
+                    <th>Department</th>
                     <th>Hours</th>
+                    <th>Regular Hours</th>
+                    <th>Overtime Hours</th>
                     <th>Rate</th>
-                    <th>Total Pay</th>
+                    <th>Base Pay</th>
+                    <th>Overtime Pay</th>
+                    <th>Allowances</th>
+                    <th>Deductions</th>
+                    <th>Gross Pay</th>
+                    <th>Net Pay</th>
                 </tr>
             </thead>
             <tbody>
@@ -208,14 +315,22 @@
                 <tr>
                     <td>{{ item.employee_id }}</td>
                     <td>{{ item.name }}</td>
+                    <td>{{ item.department or '-' }}</td>
                     <td>{{ item.hours }}</td>
+                    <td>{{ "%.1f"|format(item.regular_hours) }}</td>
+                    <td>{{ "%.1f"|format(item.overtime_hours) }}</td>
                     <td>${{ "%.2f"|format(item.rate) }}/hr</td>
-                    <td>${{ "%.2f"|format(item.total_pay) }}</td>
+                    <td>${{ "%.2f"|format(item.base_pay) }}</td>
+                    <td>${{ "%.2f"|format(item.overtime_pay) }}</td>
+                    <td>${{ "%.2f"|format(item.allowances) }}</td>
+                    <td>${{ "%.2f"|format(item.deductions) }}</td>
+                    <td>${{ "%.2f"|format(item.gross_pay) }}</td>
+                    <td>${{ "%.2f"|format(item.net_pay) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <div class="total">Grand Total: ${{ "%.2f"|format(total) }}</div>
+        <div class="total">Gross Total: ${{ "%.2f"|format(totals.gross_total or 0) }} | Net Total: ${{ "%.2f"|format(totals.net_total or 0) }}</div>
         {% else %}
         <p>No payroll data available.</p>
         {% endif %}

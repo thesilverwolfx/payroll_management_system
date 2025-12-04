@@ -3,6 +3,18 @@
     "name": "Yash",
     "employee_id": "1571",
     "hourly_rate": 20.0,
-    "hours_worked": 12.0
+    "hours_worked": 12.0,
+    "department": "",
+    "allowances": 0,
+    "deductions": 0
+  },
+  "1575": {
+    "name": "Bansal",
+    "employee_id": "1575",
+    "hourly_rate": 10.0,
+    "hours_worked": 2.0,
+    "department": "cse",
+    "allowances": 1.0,
+    "deductions": 3.0
   }
 }
