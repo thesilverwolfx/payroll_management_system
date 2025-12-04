@@ -1,20 +1,29 @@
 {
-  "1571": {
-    "name": "Yash",
-    "employee_id": "1571",
-    "hourly_rate": 20.0,
-    "hours_worked": 12.0,
-    "department": "",
-    "allowances": 0,
-    "deductions": 0
-  },
   "1575": {
     "name": "Bansal",
     "employee_id": "1575",
     "hourly_rate": 10.0,
-    "hours_worked": 2.0,
+    "hours_worked": 10.0,
     "department": "cse",
     "allowances": 1.0,
-    "deductions": 3.0
+    "deductions": 2.0
+  },
+  "1570": {
+    "name": "dhruv",
+    "employee_id": "1570",
+    "hourly_rate": 10.0,
+    "hours_worked": 0,
+    "department": "ERCE",
+    "allowances": 0.0,
+    "deductions": 9.0
+  },
+  "1600": {
+    "name": "nakshatra",
+    "employee_id": "1600",
+    "hourly_rate": 8.0,
+    "hours_worked": 7.0,
+    "department": "SDSD",
+    "allowances": 2.0,
+    "deductions": 0.0
   }
 }
