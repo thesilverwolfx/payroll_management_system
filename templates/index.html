@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button.danger {
+            background: #f44336;
+        }
+        button.danger:hover {
+            background: #da190b;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #4CAF50;
+            color: white;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .flash {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .flash.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flash.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .form-inline {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .form-inline .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Payroll Management System</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="container">
+        <h2>Add Employee</h2>
+        <form method="POST" action="/add_employee">
+            <div class="form-group">
+                <label>Name:</label>
+                <input type="text" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>Employee ID:</label>
+                <input type="text" name="employee_id" required>
+            </div>
+            <div class="form-group">
+                <label>Hourly Rate ($):</label>
+                <input type="number" name="hourly_rate" step="0.01" required>
+            </div>
+            <button type="submit">Add Employee</button>
+        </form>
+    </div>
+
+    <div class="container">
+        <h2>Update Hours Worked</h2>
+        <form method="POST" action="/update_hours" class="form-inline">
+            <div class="form-group">
+                <label>Employee ID:</label>
+                <input type="text" name="employee_id" required>
+            </div>
+            <div class="form-group">
+                <label>Hours:</label>
+                <input type="number" name="hours" step="0.1" required>
+            </div>
+            <button type="submit">Update Hours</button>
+        </form>
+    </div>
+
+    <div class="container">
+        <h2>Employees</h2>
+        {% if employees %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Hourly Rate</th>
+                    <th>Hours Worked</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in employees %}
+                <tr>
+                    <td>{{ emp.employee_id }}</td>
+                    <td>{{ emp.name }}</td>
+                    <td>${{ "%.2f"|format(emp.hourly_rate) }}</td>
+                    <td>{{ emp.hours_worked }}</td>
+                    <td>
+                        <a href="/remove_employee/{{ emp.employee_id }}">
+                            <button class="danger">Remove</button>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No employees found.</p>
+        {% endif %}
+    </div>
+
+    <div class="container">
+        <h2>Payroll Report</h2>
+        {% if payroll_list %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Hours</th>
+                    <th>Rate</th>
+                    <th>Total Pay</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in payroll_list %}
+                <tr>
+                    <td>{{ item.employee_id }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.hours }}</td>
+                    <td>${{ "%.2f"|format(item.rate) }}/hr</td>
+                    <td>${{ "%.2f"|format(item.total_pay) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="total">Grand Total: ${{ "%.2f"|format(total) }}</div>
+        {% else %}
+        <p>No payroll data available.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
+
+
